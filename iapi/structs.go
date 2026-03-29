@@ -9,7 +9,7 @@ duplicate or near duplicate defintions of structs are being defined but can be r
 be in place to ensure everything still works.
 */
 
-//ServiceStruct stores service results
+// ServiceStruct stores service results
 type ServiceStruct struct {
 	Attrs ServiceAttrs `json:"attrs"`
 	Joins struct{}     `json:"joins"`
@@ -49,23 +49,17 @@ type CheckcommandAttrs struct {
 	//	Zone      string      `json:"zone"`   			// Available to be set but not supported yet
 }
 
-// HostgroupStruct is a struct used to store results from an Icinga2 HostGroup API Call. The content are also used to generate the JSON for the CreateHost call
+// HostgroupStruct is a struct used to store results from an Icinga2 HostGroup API Call. The content are also used to generate the JSON for the CreateHostgroup call
 type HostgroupStruct struct {
 	Name  string         `json:"name"`
 	Type  string         `json:"type"`
 	Attrs HostgroupAttrs `json:"attrs"`
-	Meta  struct{}       `json:"meta"`
-	Joins struct{}       `json:"stuct"`
 }
 
 // HostgroupAttrs ...
 type HostgroupAttrs struct {
-	ActionURL   string   `json:"action_url"`
-	DisplayName string   `json:"display_name"`
-	Groups      []string `json:"groups"`
-	Notes       string   `json:"notes"`
-	NotesURL    string   `json:"notes_url"`
-	Templates   []string `json:"templates"`
+	DisplayName string `json:"display_name,omitempty"`
+	Zone        string `json:"zone,omitempty"`
 }
 
 // HostStruct is a struct used to store results from an Icinga2 Host API Call. The content are also used to generate the JSON for the CreateHost call
@@ -140,7 +134,7 @@ type UserAttrs struct {
 	Email string `json:"email"`
 }
 
-//NotificationStruct stores notification results
+// NotificationStruct stores notification results
 type NotificationStruct struct {
 	Attrs NotificationAttrs `json:"attrs"`
 	Joins struct{}          `json:"joins"`

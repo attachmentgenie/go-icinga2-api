@@ -10,11 +10,20 @@ func TestHostgroups(t *testing.T) {
 		t.Run("Hostgroup", func(t *testing.T) {
 			name := "docker-servers"
 			displayName := "Docker Host Servers"
-			_, err := icingaServer.CreateHostgroup(name, displayName)
+			_, err := icingaServer.CreateHostgroup(name, displayName, "")
 			if err != nil {
 				t.Error(err)
 			}
 		})
+		t.Run("HostgroupWithZone", func(t *testing.T) {
+			name := "docker-servers-zone"
+			displayName := "Docker Host Servers on zone"
+			_, err := icingaServer.CreateHostgroup(name, displayName, "master")
+			if err != nil {
+				t.Error(err)
+			}
+		})
+
 	})
 
 	t.Run("Read", func(t *testing.T) {
@@ -38,7 +47,7 @@ func TestHostgroups(t *testing.T) {
 	t.Run("Update", func(t *testing.T) {
 		hostgroupName := "someHostgroupName"
 		firstDisplayName := "some Hostgroup Display Name"
-		_, err := icingaServer.CreateHostgroup(hostgroupName, firstDisplayName)
+		_, err := icingaServer.CreateHostgroup(hostgroupName, firstDisplayName, "")
 		if err != nil {
 			t.Error(err)
 		}
@@ -61,6 +70,13 @@ func TestHostgroups(t *testing.T) {
 		// Delete Hostgroup created via API. Should succeed
 		t.Run("Hostgroup", func(t *testing.T) {
 			name := "docker-servers"
+			err := icingaServer.DeleteHostgroup(name)
+			if err != nil {
+				t.Error(err)
+			}
+		})
+		t.Run("HostgroupWithZon e", func(t *testing.T) {
+			name := "docker-servers-zone"
 			err := icingaServer.DeleteHostgroup(name)
 			if err != nil {
 				t.Error(err)

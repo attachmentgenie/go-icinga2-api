@@ -47,9 +47,10 @@ func (server *Server) GetHostgroup(name string) ([]HostgroupStruct, error) {
 }
 
 // CreateHostgroup creates a new HostGroup with its name and display name.
-func (server *Server) CreateHostgroup(name, displayName string) ([]HostgroupStruct, error) {
+func (server *Server) CreateHostgroup(name, displayName, zone string) ([]HostgroupStruct, error) {
 	var newAttrs HostgroupAttrs
 	newAttrs.DisplayName = displayName
+	newAttrs.Zone = zone
 
 	var newHostgroup HostgroupStruct
 	newHostgroup.Name = name
