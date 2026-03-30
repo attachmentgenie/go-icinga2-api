@@ -43,8 +43,13 @@ func TestCreateSimpleIPv6Host(t *testing.T) {
 	CheckCommand := "hostalive"
 
 	_, err := Icinga2_Server.CreateHost(hostname, IPAddress, IP6Address, CheckCommand, nil, nil, nil)
-
 	if err != nil {
+		t.Error(err)
+	}
+
+	// Delete host after creating it.
+	deleteErr := Icinga2_Server.DeleteHost(hostname)
+	if deleteErr != nil {
 		t.Error(err)
 	}
 }
