@@ -5,7 +5,7 @@ import (
 )
 
 func TestHostgroups(t *testing.T) {
-	icingaServer := Server{"root", ICINGA2_API_PASSWORD, "https://127.0.0.1:5665/v1", true, nil}
+	icingaServer := Server{ICINGA2_API_USER, ICINGA2_API_PASSWORD, ICINGA2_API_URL, ICINGA2_INSECURE_SKIP_TLS_VERIFY, nil}
 	t.Run("Create", func(t *testing.T) {
 		t.Run("Hostgroup", func(t *testing.T) {
 			name := "docker-servers"
