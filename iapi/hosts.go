@@ -89,3 +89,19 @@ func (server *Server) DeleteHost(hostname string) error {
 
 	return fmt.Errorf("%s", results.ErrorString)
 }
+
+// HostExists returns true if a Host exists
+func (server *Server) HostExists(hostname string) (bool, error) {
+	hosts, err := server.GetHost(hostname)
+	if err != nil {
+		return false, err
+	}
+
+	for _, host := range hosts {
+		if host.Name == hostname {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
