@@ -40,17 +40,20 @@ func TestConnect(t *testing.T) {
 
 func TestConnectServerUnavailable(t *testing.T) {
 
-	var Icinga2_Server = Server{"icinga-test", "icinga", "https://127.0.0.1:4665/v1", ICINGA2_INSECURE_SKIP_TLS_VERIFY, nil}
+	var Icinga2_Server = Server{"icinga-test", "icinga", "https://127.0.0.1:4665/v1", ICINGA2_INSECURE_SKIP_TLS_VERIFY, 5, 0, nil}
 	err := Icinga2_Server.Connect()
 
 	if err == nil {
 		t.Errorf("Error : Did not get error connecting to unavailable server.")
 	}
+	if retries != 5 {
+		t.Errorf("Error : Did not get error connecting to unavailable server before 5 retries.")
+	}
 }
 
 func TestConnectWithBadCredential(t *testing.T) {
 
-	var Icinga2_Server = Server{"unknownUser", "unknownPW", ICINGA2_API_URL, ICINGA2_INSECURE_SKIP_TLS_VERIFY, nil}
+	var Icinga2_Server = Server{"unknownUser", "unknownPW", ICINGA2_API_URL, ICINGA2_INSECURE_SKIP_TLS_VERIFY, 0, 0, nil}
 	err := Icinga2_Server.Connect()
 	if err != nil {
 		t.Errorf("Did not fail with bad credentials : %s", err)
@@ -66,9 +69,22 @@ func TestNewAPIRequest(t *testing.T) {
 	}
 }
 
+func TestNewAPIRequestServerUnavailable(t *testing.T) {
+
+	var Icinga2_Server = Server{"icinga-test", "icinga", "https://127.0.0.1:4665/v1", true, 5, 0, nil}
+	result, err := Icinga2_Server.NewAPIRequest("GET", "/status", nil)
+
+	if err == nil {
+		t.Errorf("Error : Did not get error connecting to unavailable server.")
+	}
+	if result.Retries != 5 {
+		t.Errorf("Error : Did not get error connecting to unavailable server before 5 retries.")
+	}
+}
+
 func TestConnectServerBadURINoVersion(t *testing.T) {
 
-	var Icinga2_Server = Server{ICINGA2_API_USER, ICINGA2_API_PASSWORD, "https://127.0.0.1:5665", ICINGA2_INSECURE_SKIP_TLS_VERIFY, nil}
+	var Icinga2_Server = Server{ICINGA2_API_USER, ICINGA2_API_PASSWORD, "https://127.0.0.1:5665", ICINGA2_INSECURE_SKIP_TLS_VERIFY, 0, 0, nil}
 	result, _ := Icinga2_Server.NewAPIRequest("GET", "/status", nil)
 
 	if result.Code != 404 {

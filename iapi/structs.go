@@ -94,6 +94,7 @@ type APIResult struct {
 	Status      string      `json:"Status"`
 	Code        int         `json:"Code"`
 	Results     interface{} `json:"results"`
+	Retries     int         `json:"Retries"`
 }
 
 // APIStatus stores the results of an Icinga2 API Status Call
