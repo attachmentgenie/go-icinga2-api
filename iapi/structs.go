@@ -152,3 +152,38 @@ type NotificationAttrs struct {
 	Vars        interface{} `json:"vars"`
 	Templates   []string    `json:"templates"`
 }
+
+// DowntimeScheduleRequest Create the API request to schedule a downtime
+type DowntimeScheduleRequest struct {
+	Type         string `json:"type"`
+	Filter       string `json:"filter"`
+	Author       string `json:"author"`
+	Comment      string `json:"comment"`
+	StartTime    int64  `json:"start_time"`
+	EndTime      int64  `json:"end_time"`
+	Fixed        bool   `json:"fixed"`
+	Duration     int64  `json:"duration,omitempty"`
+	AllServices  bool   `json:"all_services"`
+	TriggerName  string `json:"trigger_name,omitempty"`
+	ChildOptions string `json:"child_options,omitempty"`
+}
+
+// DowntimeScheduleResponse Store response of the API to schedule a downtime
+type DowntimeScheduleResponse struct {
+	Code     float64 `json:"code"`
+	LegacyID float64 `json:"legacy_id"`
+	Name     string  `json:"name"`
+	Status   string  `json:"status"`
+}
+
+// DowntimeRemoveRequest Create the API request to remove a downtime
+type DowntimeRemoveRequest struct {
+	Downtime string `json:"downtime"`
+	Author   string `json:"author"`
+}
+
+// DowntimeRemoveResponse Store response of the API to remove a downtime
+type DowntimeRemoveResponse struct {
+	Code   float64 `json:"code"`
+	Status string  `json:"status"`
+}
