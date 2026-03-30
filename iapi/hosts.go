@@ -33,7 +33,7 @@ func (server *Server) GetHost(hostname string) ([]HostStruct, error) {
 }
 
 // CreateHost ...
-func (server *Server) CreateHost(hostname, address, address6 string, checkCommand string, variables map[string]string, templates []string, groups []string) ([]HostStruct, error) {
+func (server *Server) CreateHost(hostname, address, address6 string, checkCommand string, variables map[string]string, templates []string, groups []string, zone string) ([]HostStruct, error) {
 
 	var newAttrs HostAttrs
 	newAttrs.Address = address
@@ -41,6 +41,7 @@ func (server *Server) CreateHost(hostname, address, address6 string, checkComman
 	newAttrs.CheckCommand = checkCommand
 	newAttrs.Vars = variables
 	newAttrs.Templates = templates
+	newAttrs.Zone = zone
 
 	if groups == nil {
 		groups = []string{}
@@ -87,4 +88,20 @@ func (server *Server) DeleteHost(hostname string) error {
 	}
 
 	return fmt.Errorf("%s", results.ErrorString)
+}
+
+// HostExists returns true if a Host exists
+func (server *Server) HostExists(hostname string) (bool, error) {
+	hosts, err := server.GetHost(hostname)
+	if err != nil {
+		return false, err
+	}
+
+	for _, host := range hosts {
+		if host.Name == hostname {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
