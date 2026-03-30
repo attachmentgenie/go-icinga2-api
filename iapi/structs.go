@@ -9,7 +9,7 @@ duplicate or near duplicate defintions of structs are being defined but can be r
 be in place to ensure everything still works.
 */
 
-//ServiceStruct stores service results
+// ServiceStruct stores service results
 type ServiceStruct struct {
 	Attrs ServiceAttrs `json:"attrs"`
 	Joins struct{}     `json:"joins"`
@@ -49,32 +49,27 @@ type CheckcommandAttrs struct {
 	//	Zone      string      `json:"zone"`   			// Available to be set but not supported yet
 }
 
-// HostgroupStruct is a struct used to store results from an Icinga2 HostGroup API Call. The content are also used to generate the JSON for the CreateHost call
+// HostgroupStruct is a struct used to store results from an Icinga2 HostGroup API Call. The content are also used to generate the JSON for the CreateHostgroup call
 type HostgroupStruct struct {
 	Name  string         `json:"name"`
 	Type  string         `json:"type"`
 	Attrs HostgroupAttrs `json:"attrs"`
-	Meta  struct{}       `json:"meta"`
-	Joins struct{}       `json:"stuct"`
 }
 
 // HostgroupAttrs ...
 type HostgroupAttrs struct {
-	ActionURL   string   `json:"action_url"`
-	DisplayName string   `json:"display_name"`
-	Groups      []string `json:"groups"`
-	Notes       string   `json:"notes"`
-	NotesURL    string   `json:"notes_url"`
-	Templates   []string `json:"templates"`
+	DisplayName string `json:"display_name,omitempty"`
+	Zone        string `json:"zone,omitempty"`
 }
 
 // HostStruct is a struct used to store results from an Icinga2 Host API Call. The content are also used to generate the JSON for the CreateHost call
 type HostStruct struct {
-	Name  string    `json:"name"`
-	Type  string    `json:"type"`
-	Attrs HostAttrs `json:"attrs"`
-	Meta  struct{}  `json:"meta"`
-	Joins struct{}  `json:"stuct"`
+	Name      string    `json:"name"`
+	Type      string    `json:"type"`
+	Attrs     HostAttrs `json:"attrs"`
+	Meta      struct{}  `json:"meta"`
+	Joins     struct{}  `json:"stuct"`
+	Templates []string  `json:"templates"`
 }
 
 // HostAttrs This is struct lists the attributes that can be set during a CreateHost call. The contents of the struct is converted into JSON
@@ -88,7 +83,8 @@ type HostAttrs struct {
 	Notes        string      `json:"notes"`
 	NotesURL     string      `json:"notes_url"`
 	Templates    []string    `json:"templates"`
-	Vars         interface{} `json:"vars"`
+	Vars         interface{} `json:"vars,omitempty"`
+	Zone         string      `json:"zone,omitempty"`
 }
 
 // APIResult Stores the results from NewApiRequest
@@ -98,6 +94,7 @@ type APIResult struct {
 	Status      string      `json:"Status"`
 	Code        int         `json:"Code"`
 	Results     interface{} `json:"results"`
+	Retries     int         `json:"Retries"`
 }
 
 // APIStatus stores the results of an Icinga2 API Status Call
@@ -140,7 +137,7 @@ type UserAttrs struct {
 	Email string `json:"email"`
 }
 
-//NotificationStruct stores notification results
+// NotificationStruct stores notification results
 type NotificationStruct struct {
 	Attrs NotificationAttrs `json:"attrs"`
 	Joins struct{}          `json:"joins"`
@@ -155,4 +152,39 @@ type NotificationAttrs struct {
 	Interval    int         `json:"interval"`
 	Vars        interface{} `json:"vars"`
 	Templates   []string    `json:"templates"`
+}
+
+// DowntimeScheduleRequest Create the API request to schedule a downtime
+type DowntimeScheduleRequest struct {
+	Type         string `json:"type"`
+	Filter       string `json:"filter"`
+	Author       string `json:"author"`
+	Comment      string `json:"comment"`
+	StartTime    int64  `json:"start_time"`
+	EndTime      int64  `json:"end_time"`
+	Fixed        bool   `json:"fixed"`
+	Duration     int64  `json:"duration,omitempty"`
+	AllServices  bool   `json:"all_services"`
+	TriggerName  string `json:"trigger_name,omitempty"`
+	ChildOptions string `json:"child_options,omitempty"`
+}
+
+// DowntimeScheduleResponse Store response of the API to schedule a downtime
+type DowntimeScheduleResponse struct {
+	Code     float64 `json:"code"`
+	LegacyID float64 `json:"legacy_id"`
+	Name     string  `json:"name"`
+	Status   string  `json:"status"`
+}
+
+// DowntimeRemoveRequest Create the API request to remove a downtime
+type DowntimeRemoveRequest struct {
+	Downtime string `json:"downtime"`
+	Author   string `json:"author"`
+}
+
+// DowntimeRemoveResponse Store response of the API to remove a downtime
+type DowntimeRemoveResponse struct {
+	Code   float64 `json:"code"`
+	Status string  `json:"status"`
 }

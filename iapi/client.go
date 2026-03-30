@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"io"
 	"net/http"
 	"time"
 )
@@ -15,21 +16,21 @@ type Server struct {
 	Password           string
 	BaseURL            string
 	AllowUnverifiedSSL bool
+	Retries            int
+	RetryDelay         time.Duration
 	httpClient         *http.Client
 }
 
-func New(username, password, url string, allowUnverifiedSSL bool) (*Server, error) {
-	return &Server{username, password, url, allowUnverifiedSSL, nil}, nil
+func New(username, password, url string, allowUnverifiedSSL bool, retries int, retryDelay time.Duration) (*Server, error) {
+	return &Server{username, password, url, allowUnverifiedSSL, retries, retryDelay, nil}, nil
 }
 
-func (server *Server) Config(username, password, url string, allowUnverifiedSSL bool) (*Server, error) {
-
+func (server *Server) Config(username, password, url string, allowUnverifiedSSL bool, retries int, retryDelay time.Duration) (*Server, error) {
 	// TODO : Add code to verify parameters
-	return &Server{username, password, url, allowUnverifiedSSL, nil}, nil
-
+	return &Server{username, password, url, allowUnverifiedSSL, retries, retryDelay, nil}, nil
 }
 
-func (server *Server) Connect() error {
+func (server *Server) doRequest(method, fullURL string, body io.Reader) (*http.Response, error, int) {
 
 	t := &http.Transport{
 		TLSClientConfig: &tls.Config{
@@ -42,58 +43,65 @@ func (server *Server) Connect() error {
 		Timeout:   time.Second * 60,
 	}
 
-	request, err := http.NewRequest("GET", server.BaseURL, nil)
-	if err != nil {
-		server.httpClient = nil
+	var bodyBytes []byte
+	if body != nil {
+		bodyBytes, _ = io.ReadAll(body)
 	}
 
-	request.SetBasicAuth(server.Username, server.Password)
-	request.Header.Set("Accept", "application/json")
-	request.Header.Set("Content-Type", "application/json")
+	var response *http.Response
+	var doErr error
+	retries := 0
+	for {
+		request, requestErr := http.NewRequest(method, fullURL, io.NopCloser(bytes.NewBuffer(bodyBytes)))
+		if requestErr != nil {
+			return nil, requestErr, retries
+		}
 
-	response, err := server.httpClient.Do(request)
+		request.SetBasicAuth(server.Username, server.Password)
+		request.Header.Set("Accept", "application/json")
+		request.Header.Set("Content-Type", "application/json")
 
-	if (err != nil) || (response == nil) {
+		response, doErr = server.httpClient.Do(request)
+
+		if !((doErr != nil) || (response == nil || response.StatusCode == 503)) {
+			break
+		}
+
+		if retries >= server.Retries {
+			break
+		}
+		retries++
+		time.Sleep(server.RetryDelay)
+	}
+
+	return response, doErr, retries
+}
+
+func (server *Server) Connect() (error, int) {
+
+	response, doErr, retries := server.doRequest("GET", server.BaseURL, nil)
+
+	if (doErr != nil) || (response == nil || response.StatusCode == 503) {
 		server.httpClient = nil
-		return err
+		return doErr, retries
 	}
 
 	defer response.Body.Close()
 
-	return nil
+	return nil, retries
 }
 
 // NewAPIRequest ...
 func (server *Server) NewAPIRequest(method, APICall string, jsonString []byte) (*APIResult, error) {
 
-	fullURL := server.BaseURL + APICall
+	response, doErr, retries := server.doRequest(method, server.BaseURL+APICall, bytes.NewBuffer(jsonString))
 
-	t := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: server.AllowUnverifiedSSL,
-		},
-	}
-
-	server.httpClient = &http.Client{
-		Transport: t,
-		Timeout:   time.Second * 60,
-	}
-
-	request, requestErr := http.NewRequest(method, fullURL, bytes.NewBuffer(jsonString))
-	if requestErr != nil {
-		return nil, requestErr
-	}
-
-	request.SetBasicAuth(server.Username, server.Password)
-	request.Header.Set("Accept", "application/json")
-	request.Header.Set("Content-Type", "application/json")
-
-	response, doErr := server.httpClient.Do(request)
 	if doErr != nil {
 		results := APIResult{
 			Code:        0,
 			Status:      "Error : Request to server failed : " + doErr.Error(),
 			ErrorString: doErr.Error(),
+			Retries:     retries,
 		}
 		return &results, doErr
 	}
@@ -102,6 +110,10 @@ func (server *Server) NewAPIRequest(method, APICall string, jsonString []byte) (
 	var results APIResult
 	if decodeErr := json.NewDecoder(response.Body).Decode(&results); decodeErr != nil {
 		return nil, decodeErr
+	}
+
+	if results.Retries == 0 { // results.Retries have default value so set it.
+		results.Retries = retries
 	}
 
 	if results.Code == 0 { // results.Code has default value so set it.
