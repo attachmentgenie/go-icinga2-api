@@ -6,7 +6,7 @@ tag:
 release: tag
 
 watch:
-	gotestsum --watch --format testname
+	watchexec -e go make qa
 lint:
 	golangci-lint run
 fmt:
