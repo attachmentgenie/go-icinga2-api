@@ -11,7 +11,7 @@ var ICINGA2_API_PASSWORD = os.Getenv("ICINGA2_API_PASSWORD")
 var ICINGA2_API_URL = os.Getenv("ICINGA2_API_URL")
 var ICINGA2_INSECURE_SKIP_TLS_VERIFY, _ = strconv.ParseBool(os.Getenv("ICINGA2_INSECURE_SKIP_TLS_VERIFY"))
 
-var Icinga2_Server = Server{ICINGA2_API_USER, ICINGA2_API_PASSWORD, ICINGA2_API_URL, ICINGA2_INSECURE_SKIP_TLS_VERIFY, nil}
+var Icinga2_Server = Server{ICINGA2_API_USER, ICINGA2_API_PASSWORD, ICINGA2_API_URL, ICINGA2_INSECURE_SKIP_TLS_VERIFY, 0, 0, nil}
 
 func TestConnect(t *testing.T) {
 
@@ -30,7 +30,7 @@ func TestConnect(t *testing.T) {
 		t.Fatal("ICINGA2_API_PASSWORD must be set for acceptance tests")
 	}
 
-	var Icinga2_Server = Server{"icinga-test", "icinga", ICINGA2_API_URL, ICINGA2_INSECURE_SKIP_TLS_VERIFY, nil}
+	var Icinga2_Server = Server{"icinga-test", "icinga", ICINGA2_API_URL, ICINGA2_INSECURE_SKIP_TLS_VERIFY, 0, 0, nil}
 	Icinga2_Server.Connect()
 
 	if Icinga2_Server.httpClient == nil {
@@ -41,7 +41,7 @@ func TestConnect(t *testing.T) {
 func TestConnectServerUnavailable(t *testing.T) {
 
 	var Icinga2_Server = Server{"icinga-test", "icinga", "https://127.0.0.1:4665/v1", ICINGA2_INSECURE_SKIP_TLS_VERIFY, 5, 0, nil}
-	err := Icinga2_Server.Connect()
+	retries, err := Icinga2_Server.Connect()
 
 	if err == nil {
 		t.Errorf("Error : Did not get error connecting to unavailable server.")
@@ -54,7 +54,7 @@ func TestConnectServerUnavailable(t *testing.T) {
 func TestConnectWithBadCredential(t *testing.T) {
 
 	var Icinga2_Server = Server{"unknownUser", "unknownPW", ICINGA2_API_URL, ICINGA2_INSECURE_SKIP_TLS_VERIFY, 0, 0, nil}
-	err := Icinga2_Server.Connect()
+	_, err := Icinga2_Server.Connect()
 	if err != nil {
 		t.Errorf("Did not fail with bad credentials : %s", err)
 	}
@@ -71,7 +71,7 @@ func TestNewAPIRequest(t *testing.T) {
 
 func TestNewAPIRequestServerUnavailable(t *testing.T) {
 
-	var Icinga2_Server = Server{"icinga-test", "icinga", "https://127.0.0.1:4665/v1", true, 5, 0, nil}
+	var Icinga2_Server = Server{"icinga-test", "icinga", "https://127.0.0.1:4665/v1", ICINGA2_INSECURE_SKIP_TLS_VERIFY, 5, 0, nil}
 	result, err := Icinga2_Server.NewAPIRequest("GET", "/status", nil)
 
 	if err == nil {

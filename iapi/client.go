@@ -30,7 +30,7 @@ func (server *Server) Config(username, password, url string, allowUnverifiedSSL 
 	return &Server{username, password, url, allowUnverifiedSSL, retries, retryDelay, nil}, nil
 }
 
-func (server *Server) doRequest(method, fullURL string, body io.Reader) (*http.Response, error, int) {
+func (server *Server) doRequest(method, fullURL string, body io.Reader) (*http.Response, int, error) {
 
 	t := &http.Transport{
 		TLSClientConfig: &tls.Config{
@@ -54,7 +54,7 @@ func (server *Server) doRequest(method, fullURL string, body io.Reader) (*http.R
 	for {
 		request, requestErr := http.NewRequest(method, fullURL, io.NopCloser(bytes.NewBuffer(bodyBytes)))
 		if requestErr != nil {
-			return nil, requestErr, retries
+			return nil, retries, requestErr
 		}
 
 		request.SetBasicAuth(server.Username, server.Password)
@@ -63,7 +63,7 @@ func (server *Server) doRequest(method, fullURL string, body io.Reader) (*http.R
 
 		response, doErr = server.httpClient.Do(request)
 
-		if !((doErr != nil) || (response == nil || response.StatusCode == 503)) {
+		if doErr == nil && response != nil && response.StatusCode != 503 {
 			break
 		}
 
@@ -74,27 +74,27 @@ func (server *Server) doRequest(method, fullURL string, body io.Reader) (*http.R
 		time.Sleep(server.RetryDelay)
 	}
 
-	return response, doErr, retries
+	return response, retries, doErr
 }
 
-func (server *Server) Connect() (error, int) {
+func (server *Server) Connect() (int, error) {
 
-	response, doErr, retries := server.doRequest("GET", server.BaseURL, nil)
+	response, retries, doErr := server.doRequest("GET", server.BaseURL, nil)
 
 	if (doErr != nil) || (response == nil || response.StatusCode == 503) {
 		server.httpClient = nil
-		return doErr, retries
+		return retries, doErr
 	}
 
 	defer response.Body.Close()
 
-	return nil, retries
+	return retries, nil
 }
 
 // NewAPIRequest ...
 func (server *Server) NewAPIRequest(method, APICall string, jsonString []byte) (*APIResult, error) {
 
-	response, doErr, retries := server.doRequest(method, server.BaseURL+APICall, bytes.NewBuffer(jsonString))
+	response, retries, doErr := server.doRequest(method, server.BaseURL+APICall, bytes.NewBuffer(jsonString))
 
 	if doErr != nil {
 		results := APIResult{
