@@ -156,7 +156,7 @@ func TestHostExistsFound(t *testing.T) {
 	IPAddress := "127.0.0.4"
 	CheckCommand := "hostalive"
 
-	_, err := Icinga2_Server.CreateHost(hostname, IPAddress, "", CheckCommand, nil, nil, nil)
+	_, err := Icinga2_Server.CreateHost(hostname, IPAddress, "", CheckCommand, nil, nil, nil, "")
 
 	if err != nil {
 		t.Error(err)

@@ -7,14 +7,14 @@ import (
 )
 
 func TestDowntimes(t *testing.T) {
-	icingaServer := Server{"root", ICINGA2_API_PASSWORD, "https://127.0.0.1:5665/v1", true, nil}
+	icingaServer := Server{ICINGA2_API_USER, ICINGA2_API_PASSWORD, ICINGA2_API_URL, ICINGA2_INSECURE_SKIP_TLS_VERIFY, nil}
 
 	t.Run("Create", func(t *testing.T) {
 		t.Run("Downtime", func(t *testing.T) {
 			hostname := "go-icinga2-api-dt-create"
 			IPAddress := "127.0.0.2"
 			CheckCommand := "hostalive"
-			_, err := icingaServer.CreateHost(hostname, IPAddress, "", CheckCommand, nil, nil, nil)
+			_, err := icingaServer.CreateHost(hostname, IPAddress, "", CheckCommand, nil, nil, nil,"")
 			if err != nil {
 				t.Error(err)
 			}
@@ -51,7 +51,7 @@ func TestDowntimes(t *testing.T) {
 			hostname := "go-icinga2-api-dt-create"
 			IPAddress := "127.0.0.2"
 			CheckCommand := "hostalive"
-			_, err := icingaServer.CreateHost(hostname, IPAddress, "", CheckCommand, nil, nil, nil)
+			_, err := icingaServer.CreateHost(hostname, IPAddress, "", CheckCommand, nil, nil, nil, "")
 			if err != nil {
 				t.Error(err)
 			}
@@ -91,7 +91,7 @@ func TestDowntimes(t *testing.T) {
 			hostname := "go-icinga2-api-dt-create"
 			IPAddress := "127.0.0.2"
 			CheckCommand := "hostalive"
-			_, err := icingaServer.CreateHost(hostname, IPAddress, "", CheckCommand, nil, nil, nil)
+			_, err := icingaServer.CreateHost(hostname, IPAddress, "", CheckCommand, nil, nil, nil, "")
 			if err != nil {
 				t.Error(err)
 			}
