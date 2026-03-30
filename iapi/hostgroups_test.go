@@ -66,6 +66,31 @@ func TestHostgroups(t *testing.T) {
 		}
 	})
 
+	t.Run("Exists", func(t *testing.T) {
+		t.Run("HostgroupFound", func(t *testing.T) {
+			name := "docker-servers"
+			exists, err := icingaServer.HostgroupExists(name)
+			if err != nil {
+				t.Error(err)
+			}
+
+			if !exists {
+				t.Error("host group must exist")
+			}
+		})
+
+		t.Run("HostgroupNotFound", func(t *testing.T) {
+			name := "irix-servers"
+			exists, err := icingaServer.HostgroupExists(name)
+			if err != nil {
+				t.Error(err)
+			}
+			if exists {
+				t.Error("host group must not exist")
+			}
+		})
+	})
+
 	t.Run("Delete", func(t *testing.T) {
 		// Delete Hostgroup created via API. Should succeed
 		t.Run("Hostgroup", func(t *testing.T) {

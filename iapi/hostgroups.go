@@ -120,3 +120,19 @@ func (server *Server) DeleteHostgroup(name string) error {
 
 	return fmt.Errorf("%s", results.ErrorString)
 }
+
+// HostgroupExists returns true if a HostGroup exists
+func (server *Server) HostgroupExists(name string) (bool, error) {
+	hostgroups, err := server.GetHostgroup(name)
+	if err != nil {
+		return false, err
+	}
+
+	for _, hostgroup := range hostgroups {
+		if hostgroup.Name == name {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
