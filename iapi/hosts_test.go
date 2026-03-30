@@ -43,8 +43,13 @@ func TestCreateSimpleIPv6Host(t *testing.T) {
 	CheckCommand := "hostalive"
 
 	_, err := Icinga2_Server.CreateHost(hostname, IPAddress, IP6Address, CheckCommand, nil, nil, nil)
-
 	if err != nil {
+		t.Error(err)
+	}
+
+	// Delete host after creating it.
+	deleteErr := Icinga2_Server.DeleteHost(hostname)
+	if deleteErr != nil {
 		t.Error(err)
 	}
 }
@@ -123,5 +128,44 @@ func TestDeleteHostDNE(t *testing.T) {
 	err := Icinga2_Server.DeleteHost(hostname)
 	if err.Error() != "No objects found." {
 		t.Error(err)
+	}
+}
+
+func TestHostExistsFound(t *testing.T) {
+	hostname := "go-icinga2-api-4"
+	IPAddress := "127.0.0.4"
+	CheckCommand := "hostalive"
+
+	_, err := Icinga2_Server.CreateHost(hostname, IPAddress, "", CheckCommand, nil, nil, nil)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	exists, err := Icinga2_Server.HostExists(hostname)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !exists {
+		t.Error("host must exist")
+	}
+
+	err = Icinga2_Server.DeleteHost(hostname)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestHostExistsNotFound(t *testing.T) {
+	hostname := "go-icinga2-api-4-not-found"
+
+	exists, err := Icinga2_Server.HostExists(hostname)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if exists {
+		t.Error("host must not exist")
 	}
 }

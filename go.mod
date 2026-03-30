@@ -1,3 +1,3 @@
 module github.com/lrsmith/go-icinga2-api
 
-go 1.18
+go 1.26.1
